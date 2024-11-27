@@ -1,43 +1,170 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Tarefas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Teste app</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+        table, th, td {
+            border: 1px solid #ddd;
+        }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: rgb(76, 99, 175);
+            color: white;
+            border: none;
+        }
+
+        button:hover {
+            background-color: rgb(76, 99, 175);
+        }
+    </style>
+</head>
+<body>
+<div style="padding: 20px;">
+    <h1>Gestão de Tarefas</h1>
+
+    <div class="form-container">
+        <h2>Cadastrar Nova Tarefa</h2>
+        <form id="taskForm">
+            <input type="text" id="titulo" placeholder="Título" required />
+            <input type="text" id="descricao" placeholder="Descrição" required />
+            <input type="text" id="categoriaId" placeholder="Categoria ID" required />
+            <button type="submit">Cadastrar Tarefa</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Tarefas Não Concluídas</h2>
+        <button onclick="listarTarefasNaoConcluidas()">Listar Tarefas Não Concluídas</button>
+        <table id="naoConcluidasTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Status</th>
+                    <th>Categoria</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div>
+        <h2>Todas as Tarefas</h2>
+        <button onclick="listarTarefas()">Listar Todas as Tarefas</button>
+        <table id="tarefasTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Status</th>
+                    <th>Categoria</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+    <script>
+        // Função para listar todas as tarefas
+        function listarTarefas() {
+            fetch("http://localhost:5273/api/tarefas/listar")
+                .then(response => response.json())
+                .then(data => {
+                    const tarefasTable = document.getElementById("tarefasTable").getElementsByTagName("tbody")[0];
+                    tarefasTable.innerHTML = ''; // Limpa a tabela antes de popular
+                    data.forEach(tarefa => {
+                        const row = tarefasTable.insertRow();
+                        row.insertCell(0).textContent = tarefa.tarefaId;
+                        row.insertCell(1).textContent = tarefa.titulo;
+                        row.insertCell(2).textContent = tarefa.descricao;
+                        row.insertCell(3).textContent = tarefa.status;
+                        row.insertCell(4).textContent = tarefa.categoria.nome;
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar tarefas:', error));
+        }
+
+        function listarTarefasNaoConcluidas() {
+            fetch("http://localhost:5273/api/tarefas/naoconcluidas")
+                .then(response => response.json())
+                .then(data => {
+                    const naoConcluidasTable = document.getElementById("naoConcluidasTable").getElementsByTagName("tbody")[0];
+                    naoConcluidasTable.innerHTML = '';
+                    data.forEach(tarefa => {
+                        const row = naoConcluidasTable.insertRow();
+                        row.insertCell(0).textContent = tarefa.tarefaId;
+                        row.insertCell(1).textContent = tarefa.titulo;
+                        row.insertCell(2).textContent = tarefa.descricao;
+                        row.insertCell(3).textContent = tarefa.status;
+                        row.insertCell(4).textContent = tarefa.categoria.nome;
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar tarefas não concluídas:', error));
+        }
+
+
+        document.getElementById("taskForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const titulo = document.getElementById("titulo").value;
+            const descricao = document.getElementById("descricao").value;
+            const categoriaId = document.getElementById("categoriaId").value;
+
+            const tarefaData = {
+                titulo: titulo,
+                descricao: descricao,
+                categoriaId: categoriaId
+            };
+
+            fetch("http://localhost:5273/api/tarefas/cadastrar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(tarefaData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Tarefa cadastrada com sucesso!");
+                listarTarefas();
+            })
+            .catch(error => console.error('Erro ao cadastrar tarefa:', error));
+        });
+    </script>
+
+</body>
 </html>
